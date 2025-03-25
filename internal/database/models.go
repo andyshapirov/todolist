@@ -7,7 +7,3 @@ type Task struct {
 	Comment string `json:"comment"`
 	Repeat  string `json:"repeat"`
 }
-
-type TaskList struct {
-	Tasks []Task `json:"tasks"`
-}

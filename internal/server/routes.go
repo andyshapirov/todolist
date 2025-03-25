@@ -4,15 +4,17 @@ import (
 	"net/http"
 
 	"github.com/andyshapirov/todolist/internal/handlers"
+	"github.com/go-chi/chi"
 )
 
-func setupRoutes(mux *http.ServeMux, h *handlers.TaskHandler) {
-	mux.Handle("/", http.FileServer(http.Dir("./web")))
+func setupRoutes(r *chi.Mux, h *handlers.TaskHandler) {
+	r.Handle("/*", http.StripPrefix("/", http.FileServer(http.Dir("./web"))))
 
-	mux.HandleFunc("/api/nextdate", h.TaskDate)
-
-	mux.HandleFunc("/api/signin", h.SignIn)
-	mux.HandleFunc("/api/task", handlers.Auth(h.CreateUpdateRemoveTask))
-	mux.HandleFunc("/api/tasks", handlers.Auth(h.UpcommingTasks))
-	mux.HandleFunc("/api/task/done", handlers.Auth(h.DoneTask))
+	r.Post("/api/signin", h.SignIn)
+	r.Get("/api/task", handlers.Auth(h.Password, h.Secret, h.GetTask))
+	r.Post("/api/task", handlers.Auth(h.Password, h.Secret, h.CreateTask))
+	r.Put("/api/task", handlers.Auth(h.Password, h.Secret, h.UpdateTask))
+	r.Get("/api/tasks", handlers.Auth(h.Password, h.Secret, h.GetUpcommingTasks))
+	r.Post("/api/task/done", handlers.Auth(h.Password, h.Secret, h.GetDoneTask))
+	r.Delete("/api/task", handlers.Auth(h.Password, h.Secret, h.RemoveTask))
 }

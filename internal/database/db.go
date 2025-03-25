@@ -9,33 +9,30 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-func InitDatabase() *sql.DB {
+func InitDatabase(envDBFile string) *sql.DB {
 	appPath, err := os.Executable()
 	if err != nil {
 		log.Fatal(err)
 	}
 	dbFile := filepath.Join(filepath.Dir(appPath), "scheduler.db")
-	if v, ok := os.LookupEnv("TODO_DBFILE"); len(v) > 0 && ok {
-		dbFile = v
+
+	if len(envDBFile) > 0 {
+		dbFile = envDBFile
 	}
-	_, err = os.Stat(dbFile)
-	install := err != nil
 
 	db, err := sql.Open("sqlite", dbFile)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	if install {
-		createSchema(db)
-	}
+	initSchema(db)
 
 	return db
 }
 
-func createSchema(db *sql.DB) {
+func initSchema(db *sql.DB) {
 	q := `
-	CREATE TABLE scheduler (
+	CREATE TABLE IF NOT EXISTS scheduler (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		date TEXT NOT NULL,
 		title TEXT COLLATE NOCASE NOT NULL,

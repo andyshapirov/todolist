@@ -1,13 +1,19 @@
 package handlers
 
-import "github.com/andyshapirov/todolist/internal/services"
+import "github.com/andyshapirov/todolist/internal/storage"
 
 type TaskHandler struct {
-	Service *services.TaskService
+	Password string
+	Secret   string
+	Service  *storage.TaskService
 }
 
-func NewTaskHandler(s *services.TaskService) *TaskHandler {
-	return &TaskHandler{Service: s}
+func NewTaskHandler(pass, secret string, s *storage.TaskService) *TaskHandler {
+	return &TaskHandler{
+		Password: pass,
+		Secret:   secret,
+		Service:  s,
+	}
 }
 
 type IDResponse struct {

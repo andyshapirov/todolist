@@ -3,35 +3,28 @@ package server
 import (
 	"log"
 	"net/http"
-	"os"
-	"strconv"
 
 	"github.com/andyshapirov/todolist/internal/handlers"
-	"github.com/andyshapirov/todolist/internal/services"
-	"github.com/andyshapirov/todolist/tests"
+	"github.com/andyshapirov/todolist/internal/storage"
+	"github.com/go-chi/chi"
 )
 
 type Server struct {
-	Mux  *http.ServeMux
-	Port string
+	Router *chi.Mux
+	Port   string
 }
 
-func NewServer(s *services.TaskService) *Server {
-	mux := http.NewServeMux()
-	h := handlers.NewTaskHandler(s)
-	setupRoutes(mux, h)
+func NewServer(port, pass, secret string, s *storage.TaskService) *Server {
+	r := chi.NewRouter()
+	h := handlers.NewTaskHandler(pass, secret, s)
+	setupRoutes(r, h)
 
-	p := strconv.Itoa(tests.Port)
-	if v, ok := os.LookupEnv("TODO_PORT"); len(v) > 0 && ok {
-		p = v
-	}
-
-	return &Server{Mux: mux, Port: p}
+	return &Server{Router: r, Port: port}
 }
 
 func (s *Server) Run() {
-	log.Printf("Starting server on localhost:%s\n", s.Port)
-	if err := http.ListenAndServe(":"+s.Port, s.Mux); err != nil {
+	log.Println("todolist running...")
+	if err := http.ListenAndServe(":"+s.Port, s.Router); err != nil {
 		log.Fatal(err)
 	}
 }
