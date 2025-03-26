@@ -1,9 +1,7 @@
 package tests
 
-import "github.com/andyshapirov/todolist/internal/config"
-
-var Port = config.PORT
+var Port = 7540
 var DBFile = "../scheduler.db"
 var FullNextDate = true
 var Search = true
-var Token = config.TOKEN
+var Token = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwYXNzd29yZF9oYXNoIjoiNTk5NDQ3MWFiYjAxMTEyYWZjYzE4MTU5ZjZjYzc0YjRmNTExYjk5ODA2ZGE1OWIzY2FmNWE5YzE3M2NhY2ZjNSJ9.uAob9jXw9Nky_d6jcYyx964J5hLqrEtfm8TWU6HTDBY`

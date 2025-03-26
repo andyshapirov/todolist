@@ -13,7 +13,7 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
-const LAYOUT = "20060102"
+const Layout = "20060102"
 
 func CreateJWT(pass, secret string) (string, error) {
 	hash := sha256.Sum256([]byte(pass))
@@ -35,30 +35,32 @@ func CreateJWT(pass, secret string) (string, error) {
 
 func Auth(pass, secret string, next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var jwt string
+		if len(pass) > 0 {
+			var jwt string
 
-		cookie, err := r.Cookie("token")
-		if err == nil {
-			jwt = cookie.Value
-		}
+			cookie, err := r.Cookie("token")
+			if err == nil {
+				jwt = cookie.Value
+			}
 
-		var valid bool
-		if token, err := CreateJWT(pass, secret); token == jwt && err == nil {
-			valid = true
-		}
+			var valid bool
+			if token, err := CreateJWT(pass, secret); token == jwt && err == nil {
+				valid = true
+			}
 
-		if !valid {
-			http.Error(w, "Authentification required", http.StatusUnauthorized)
-			return
+			if !valid {
+				http.Error(w, "Authentification required", http.StatusUnauthorized)
+				return
+			}
 		}
 		next(w, r)
 	})
 }
 
 func NextDate(now time.Time, date string, repeat string) (string, error) {
-	now, _ = time.Parse(LAYOUT, now.Format(LAYOUT))
+	now, _ = time.Parse(Layout, now.Format(Layout))
 
-	startDate, err := time.Parse(LAYOUT, date)
+	startDate, err := time.Parse(Layout, date)
 	if err != nil {
 		return "", err
 	}
@@ -85,10 +87,10 @@ func NextDate(now time.Time, date string, repeat string) (string, error) {
 			n += diff / d
 		}
 
-		return startDate.AddDate(0, 0, d*n).Format(LAYOUT), nil
+		return startDate.AddDate(0, 0, d*n).Format(Layout), nil
 	case r[0] == "y" && len(r) == 1:
 		if now.Before(startDate) || now.Equal(startDate) {
-			return startDate.AddDate(1, 0, 0).Format(LAYOUT), nil
+			return startDate.AddDate(1, 0, 0).Format(Layout), nil
 		}
 
 		diff := now.Year() - startDate.Year()
@@ -96,7 +98,7 @@ func NextDate(now time.Time, date string, repeat string) (string, error) {
 			diff++
 		}
 
-		return startDate.AddDate(diff, 0, 0).Format(LAYOUT), nil
+		return startDate.AddDate(diff, 0, 0).Format(Layout), nil
 	case r[0] == "w" && len(r) == 2:
 		wd := strings.Split(r[1], ",")
 		if len(wd) > 7 {
@@ -134,7 +136,7 @@ func NextDate(now time.Time, date string, repeat string) (string, error) {
 			}
 		}
 
-		return startDate.AddDate(0, 0, diff).Format(LAYOUT), nil
+		return startDate.AddDate(0, 0, diff).Format(Layout), nil
 	case r[0] == "m" && len(r) == 2:
 		md := strings.Split(r[1], ",")
 		if len(md) > 33 {
@@ -185,7 +187,7 @@ func NextDate(now time.Time, date string, repeat string) (string, error) {
 
 		}
 
-		return startDate.AddDate(0, 0, diff).Format(LAYOUT), nil
+		return startDate.AddDate(0, 0, diff).Format(Layout), nil
 	case r[0] == "m" && len(r) == 3:
 		md := strings.Split(r[1], ",")
 		if len(md) > 33 {
@@ -252,7 +254,7 @@ func NextDate(now time.Time, date string, repeat string) (string, error) {
 		}
 
 		if diff < 367 {
-			return startDate.AddDate(0, 0, diff).Format(LAYOUT), nil
+			return startDate.AddDate(0, 0, diff).Format(Layout), nil
 		}
 	}
 
@@ -264,22 +266,22 @@ func prepareTask(task *database.Task) error {
 		return errors.New("empty title")
 	}
 
-	now, _ := time.Parse(LAYOUT, time.Now().UTC().Format(LAYOUT))
+	now, _ := time.Parse(Layout, time.Now().UTC().Format(Layout))
 
 	var nextDate string
 	var err error
 	if len(task.Repeat) > 0 {
-		nextDate, err = NextDate(now, now.Format(LAYOUT), task.Repeat)
+		nextDate, err = NextDate(now, now.Format(Layout), task.Repeat)
 		if err != nil {
 			return err
 		}
 	}
 
 	if len(task.Date) == 0 {
-		task.Date = now.Format(LAYOUT)
+		task.Date = now.Format(Layout)
 	}
 
-	date, err := time.Parse(LAYOUT, task.Date)
+	date, err := time.Parse(Layout, task.Date)
 	if err != nil {
 		return errors.New("invalid date format")
 	}
@@ -290,7 +292,7 @@ func prepareTask(task *database.Task) error {
 			return nil
 		}
 
-		task.Date = now.Format(LAYOUT)
+		task.Date = now.Format(Layout)
 	}
 
 	return nil

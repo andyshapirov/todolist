@@ -7,7 +7,9 @@ import (
 	"github.com/andyshapirov/todolist/internal/database"
 )
 
-func (s TaskService) GetTasks(search string, limit int) (*map[string][]database.Task, error) {
+const Limit = 10
+
+func (s TaskService) GetTasks(search string) (*[]database.Task, error) {
 	searchLike := "%" + search + "%"
 	q := `
 	SELECT id, date, title, comment, repeat FROM scheduler
@@ -17,29 +19,30 @@ func (s TaskService) GetTasks(search string, limit int) (*map[string][]database.
 	rows, err := s.Database.Query(q,
 		sql.Named("search", search),
 		sql.Named("searchLike", searchLike),
-		sql.Named("limit", limit),
+		sql.Named("limit", Limit),
 	)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	tasks := make(map[string][]database.Task)
+	// tasks := make(map[string][]database.Task)
 	var task database.Task
+	var tasks []database.Task
 	for rows.Next() {
 		if err := rows.Scan(&task.ID, &task.Date, &task.Title, &task.Comment, &task.Repeat); err != nil {
 			return nil, err
 		}
-		tasks["tasks"] = append(tasks["tasks"], task)
+		tasks = append(tasks, task)
 	}
 
-	if err = rows.Err(); err != nil {
+	if err := rows.Err(); err != nil {
 		return nil, err
 	}
 
-	if _, ok := tasks["tasks"]; !ok {
-		tasks["tasks"] = []database.Task{}
-	}
+	// if _, ok := tasks["tasks"]; !ok {
+	// 	tasks["tasks"] = []database.Task{}
+	// }
 
 	return &tasks, nil
 }
